@@ -40,12 +40,23 @@ def media():
     res["fwa"] = calcoloMedia("Stato FWA")
     return json.dumps(res)
 
+@app.route("/media-regione", methods=["POST"])
+def mediaRegione():
+    regione=request.json["regione"]
+    res = {"fibra": [], "fwa": []}
+    res["fibra"] = calcoloMedia("Stato Fibra",regione)
+    res["fwa"] = calcoloMedia("Stato FWA",regione)
+    return json.dumps(res)
 
-def calcoloMedia(stato):
+
+def calcoloMedia(stato,regione=""):
     res = {}
+    data=df
+    if(regione!=""):
+        data=df[df["Regione"] == regione]
     for term in terms.keys():
         res[term] = round(
-            len([x for x in df[stato] if x in terms[term]]) / len(df[stato]) * 100, 2
+            len([x for x in data[stato] if x in terms[term]]) / len(data[stato]) * 100, 2
         )
 
     res["altro"] = round(
