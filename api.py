@@ -29,15 +29,27 @@ def index():
     return json.dumps(res)
 
 
-@app.route("/media", methods=["POST"])
+@app.route("/media")
 def media():
-    termRichiesto = request.json["termRichiesto"]
-    term = terms[termRichiesto]
-    query = round(
-        len([x for x in df["Stato Fibra"] if x in term]) / len(df["Stato Fibra"]) * 100,
-        2,
+    res = {}
+    for term in terms.keys():
+        res.update(
+            {
+                term: round(
+                    len([x for x in df["Stato Fibra"] if x in terms[term]])
+                    / len(df["Stato Fibra"])
+                    * 100,
+                    2,
+                )
+            }
+        )
+    res.update(
+        {
+            "altro": round(
+                100 - (res["programmato"] + res["esecuzione"] + res["terminato"]), 2
+            )
+        }
     )
-    res = {f"percentuale": query}
     return json.dumps(res)
 
 
