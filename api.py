@@ -13,7 +13,11 @@ df["Piano fibra (anno)"] = df["Piano fibra (anno)"].astype("int64")
 df["Piano FWA (anno)"] = df["Piano FWA (anno)"].astype("int64")
 
 terms = {
-    "programmato": ["in programmazione", "in progettazione"],
+    "programmato": [
+        "in programmazione",
+        "in progettazione esecutiva",
+        "in progettazione definitiva",
+    ],
     "esecuzione": ["in esecuzione"],
     "terminato": ["terminato", "lavori chiusi", "in collaudo"],
 }
@@ -31,26 +35,23 @@ def index():
 
 @app.route("/media")
 def media():
+    res = {"fibra": [], "fwa": []}
+    res["fibra"] = calcoloMedia("Stato Fibra")
+    res["fwa"] = calcoloMedia("Stato FWA")
+    return json.dumps(res)
+
+
+def calcoloMedia(stato):
     res = {}
     for term in terms.keys():
-        res.update(
-            {
-                term: round(
-                    len([x for x in df["Stato Fibra"] if x in terms[term]])
-                    / len(df["Stato Fibra"])
-                    * 100,
-                    2,
-                )
-            }
+        res[term] = round(
+            len([x for x in df[stato] if x in terms[term]]) / len(df[stato]) * 100, 2
         )
-    res.update(
-        {
-            "altro": round(
-                100 - (res["programmato"] + res["esecuzione"] + res["terminato"]), 2
-            )
-        }
+
+    res["altro"] = round(
+        100 - (res["programmato"] + res["esecuzione"] + res["terminato"]), 2
     )
-    return json.dumps(res)
+    return res
 
 
 if __name__ == "__main__":
